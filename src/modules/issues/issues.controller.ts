@@ -28,30 +28,64 @@ const createIssue = async (req: Request, res: Response) => {
 };
 
 const getAllIssue = async (req: Request, res: Response) => {
-    try {
-        const { sort, type, status } = req.query as {
-            sort?: "newest" | "oldest";
-            type?: "bug" | "feature_request";
-            status?: "open" | "in_progress" | "resolved";
-        };
+  try {
+    const { sort, type, status } = req.query as {
+      sort?: "newest" | "oldest";
+      type?: "bug" | "feature_request";
+      status?: "open" | "in_progress" | "resolved";
+    };
 
-        const issues = await issueService.getAllIssuesFromDb({ sort, type, status });
+    const issues = await issueService.getAllIssuesFromDb({
+      sort,
+      type,
+      status,
+    });
 
-        res.status(200).json({
-            success: true,
-            message: "Issues retrived successfully", 
-            data: issues,
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error instanceof Error ? error.message : "Internal server error",
-            errors: null,
-        });
+    res.status(200).json({
+      success: true,
+      message: "Issues retrived successfully",
+      data: issues,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Internal server error",
+      errors: null,
+    });
+  }
+};
+
+const getSingleIssue = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (typeof id !== "string") {
+      throw new Error("Invalid issue ID");
     }
+    const issue = await issueService.getSingleIssueFromDb(id);
+    if (!issue) {
+      res.status(404).json({
+        success: false,
+        message: "Issue not found",
+        error: null,
+      });
+
+    }
+    res.status(200).json({
+      success: true,
+      message: "Issue retrived successfully",
+      data: issue,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Internal server error",
+      errors: null,
+    });
+  }
 };
 
 export const issueController = {
   createIssue,
   getAllIssue,
+  getSingleIssue,
 };

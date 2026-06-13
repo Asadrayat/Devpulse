@@ -43,7 +43,6 @@ const getAllIssuesFromDb = async (filters: IssueFilters) => {
 
   if (issues.length === 0) return [];
 
-  
   const reporterIds = [...new Set(issues.map((i) => i.reporter_id))];
   const { rows: reporters } = await pool.query(
     `SELECT id, name, role FROM users WHERE id = ANY($1)`,
@@ -68,7 +67,30 @@ const getAllIssuesFromDb = async (filters: IssueFilters) => {
 //   return result
 // }
 
+const getSingleIssueFromDb = async (id: string) => {
+  const issueResult = await pool.query(
+      `SELECT * FROM issues WHERE id = $1`,
+      [id]
+  );
+
+  if (issueResult.rows.length === 0) return null;
+
+  const issue = issueResult.rows[0];
+
+  const reporterResult = await pool.query(
+      `SELECT id, name, role FROM users WHERE id = $1`,
+      [issue.reporter_id]
+  );
+
+  const { reporter_id, ...issueWithoutReporterId } = issue;
+
+  return {
+      ...issueWithoutReporterId,
+      reporter: reporterResult.rows[0] ?? null,
+  };
+};
 export const issueService = {
   createIssueIntoDb,
   getAllIssuesFromDb,
+  getSingleIssueFromDb,
 };
