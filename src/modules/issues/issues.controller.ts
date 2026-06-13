@@ -2,6 +2,7 @@
 import type { Request, Response } from "express";
 import { issueService } from "./issues.service";
 import { userService } from "../user/user.service";
+import sendResponse from "../../utility";
 
 const createIssue = async (req: Request, res: Response) => {
   try {
@@ -144,24 +145,39 @@ const deleteIssue = async (req: Request, res: Response) => {
       const result = await issueService.deleteIssueFromDb(id as string);
 
       if (result.rowCount === 0) {
-          res.status(404).json({
-              success: false,
-              message: "Issue Not Found",
-              data: {},
-          });
+          sendResponse(res, {
+            statusCode: 404,
+            success: false,
+            message: "Issue Not Found",
+            data: {},
+          })
       }
 
-      res.status(200).json({
-          success: true,
-          message: "Issue Deleted successfuly",
-          data: {},
-      });
+      // res.status(200).json({
+      //     success: true,
+      //     message: "Issue Deleted successfuly",
+      //     data: {},
+      // });
+      sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Issue Deleted successfuly",
+        data: {},
+      })
 
   } catch (error: any) {
       res.status(500).json({
           messge: error,
           error: error.message,
       });
+
+      sendResponse(res, {
+        statusCode: 500,
+        success: false,
+        message: error.message,
+        data: {},
+      })
+
   }
 }
 
