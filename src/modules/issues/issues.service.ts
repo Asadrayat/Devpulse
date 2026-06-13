@@ -89,8 +89,31 @@ const getSingleIssueFromDb = async (id: string) => {
       reporter: reporterResult.rows[0] ?? null,
   };
 };
+
+const updateIssueIntoDb = async (
+  id: string,
+  payload: Partial<{ title: string; description: string; type: "bug" | "feature_request" }>
+) => {
+  const { title, description, type } = payload;
+
+  const result = await pool.query(
+      `UPDATE issues
+       SET
+         title       = COALESCE($1, title),
+         description = COALESCE($2, description),
+         type        = COALESCE($3, type),
+         updated_at  = NOW()
+       WHERE id = $4
+       RETURNING *`,
+      [title ?? null, description ?? null, type ?? null, id]
+  );
+
+  return result.rows[0];
+};
+
 export const issueService = {
   createIssueIntoDb,
   getAllIssuesFromDb,
   getSingleIssueFromDb,
+  updateIssueIntoDb
 };

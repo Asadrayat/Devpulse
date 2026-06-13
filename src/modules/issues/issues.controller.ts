@@ -68,7 +68,6 @@ const getSingleIssue = async (req: Request, res: Response) => {
         message: "Issue not found",
         error: null,
       });
-
     }
     res.status(200).json({
       success: true,
@@ -84,8 +83,64 @@ const getSingleIssue = async (req: Request, res: Response) => {
   }
 };
 
+const updateIssue = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (typeof id !== "string") {
+      throw new Error("Invalid issue ID");
+    }
+    const { role, id: userId } = (req as any).user;
+
+    const existingIssue = await issueService.getSingleIssueFromDb(id);
+
+    if (!existingIssue) {
+      res.status(404).json({
+        success: false,
+        message: "Issue not found",
+        errors: null,
+      });
+      return;
+    }
+
+    if (role === "contributor") {
+      if (existingIssue.reporter?.id !== userId) {
+        res.status(403).json({
+          success: false,
+          message: "Forbidden!! You can only update your own issues",
+          errors: null,
+        });
+        return;
+      }
+
+      if (existingIssue.status !== "open") {
+        res.status(409).json({
+          success: false,
+          message: "Conflict!! You can only update issues with status 'open'",
+          errors: null,
+        });
+        return;
+      }
+    }
+
+    const updatedIssue = await issueService.updateIssueIntoDb(id, req.body);
+
+    res.status(200).json({
+      success: true,
+      message: "Issue updated successfully",
+      data: updatedIssue,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Internal server error",
+      errors: null,
+    });
+  }
+};
+
 export const issueController = {
   createIssue,
   getAllIssue,
   getSingleIssue,
+  updateIssue,
 };
