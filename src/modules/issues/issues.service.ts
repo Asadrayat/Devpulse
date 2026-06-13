@@ -68,36 +68,39 @@ const getAllIssuesFromDb = async (filters: IssueFilters) => {
 // }
 
 const getSingleIssueFromDb = async (id: string) => {
-  const issueResult = await pool.query(
-      `SELECT * FROM issues WHERE id = $1`,
-      [id]
-  );
+  const issueResult = await pool.query(`SELECT * FROM issues WHERE id = $1`, [
+    id,
+  ]);
 
   if (issueResult.rows.length === 0) return null;
 
   const issue = issueResult.rows[0];
 
   const reporterResult = await pool.query(
-      `SELECT id, name, role FROM users WHERE id = $1`,
-      [issue.reporter_id]
+    `SELECT id, name, role FROM users WHERE id = $1`,
+    [issue.reporter_id]
   );
 
   const { reporter_id, ...issueWithoutReporterId } = issue;
 
   return {
-      ...issueWithoutReporterId,
-      reporter: reporterResult.rows[0] ?? null,
+    ...issueWithoutReporterId,
+    reporter: reporterResult.rows[0] ?? null,
   };
 };
 
 const updateIssueIntoDb = async (
   id: string,
-  payload: Partial<{ title: string; description: string; type: "bug" | "feature_request" }>
+  payload: Partial<{
+    title: string;
+    description: string;
+    type: "bug" | "feature_request";
+  }>
 ) => {
   const { title, description, type } = payload;
 
   const result = await pool.query(
-      `UPDATE issues
+    `UPDATE issues
        SET
          title       = COALESCE($1, title),
          description = COALESCE($2, description),
@@ -105,15 +108,26 @@ const updateIssueIntoDb = async (
          updated_at  = NOW()
        WHERE id = $4
        RETURNING *`,
-      [title ?? null, description ?? null, type ?? null, id]
+    [title ?? null, description ?? null, type ?? null, id]
   );
 
   return result.rows[0];
+};
+
+const deleteIssueFromDb = async (id: string) => {
+  const result = await pool.query(
+    `
+    DELETE FROM users WHERE id=$1
+`,
+    [id]
+  );
+  return result;
 };
 
 export const issueService = {
   createIssueIntoDb,
   getAllIssuesFromDb,
   getSingleIssueFromDb,
-  updateIssueIntoDb
+  updateIssueIntoDb,
+  deleteIssueFromDb
 };
