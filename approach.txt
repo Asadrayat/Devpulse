@@ -1,0 +1,9 @@
+Role	Allowed Actions
+contributor	• Register and log in
+• Create new issues (bug or feature request)
+• View all issues
+• Update own issue field
+maintainer	• All contributor permissions
+• Update any issue field
+• Delete any issue
+• Change issue workflow status independently
