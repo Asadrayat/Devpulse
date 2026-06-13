@@ -1,8 +1,10 @@
 import { Router } from "express";
-// import { profileController } from "./profile.controller";
+import { issueController } from "./issues.controller";
+import auth from "../../middleware/auth_middleware";
+import { userRole } from "../types";
 
 const router = Router();
 
-// router.post("/", profileController.createProfile);
+router.post("/", auth(userRole.contributor, userRole.maintainer), issueController.createIssue);
 
 export const issueRoute = router;

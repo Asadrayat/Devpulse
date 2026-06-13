@@ -13,7 +13,7 @@ import { authService } from "./auth.service";
                 httpOnly: true, // we can access when Inproduction true
                 sameSite: 'lax'
             })
-            console.log(result);
+            // console.log(result);
 
             res.status(201).json({
                 success: true,

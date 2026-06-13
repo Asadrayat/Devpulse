@@ -37,7 +37,7 @@ app.get("/", (req: Request, res: Response) => {
     });
 });
 
-app.use("/api/users", userRoute);
+app.use("/api/auth", userRoute); // /api/auth/signup route will create user
 app.use("/api/issues", issueRoute);
 app.use("/api/auth", authRoute);
 
